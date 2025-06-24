@@ -1,14 +1,17 @@
 package tech.chillo.avis.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import tech.chillo.avis.TypeDeRole;
+import tech.chillo.avis.entite.Jwt;
 import tech.chillo.avis.entite.Role;
 import tech.chillo.avis.entite.Utilisateur;
 import tech.chillo.avis.entite.Validation;
+import tech.chillo.avis.repository.JwtRepository;
 import tech.chillo.avis.repository.UtilisateurRepository;
 
 import java.time.Instant;
@@ -21,6 +24,8 @@ public class UtilisateurService implements UserDetailsService {
     private UtilisateurRepository utilisateurRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private ValidationService validationService;
+    private JwtRepository jwtRepository;
+
     public void inscription(Utilisateur utilisateur) {
 
         if (!utilisateur.getEmail().contains("@")) {
@@ -73,5 +78,20 @@ public class UtilisateurService implements UserDetailsService {
         return this.utilisateurRepository
                 .findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Aucun utilisateur ne corespond à cet identifiant"));
+    }
+
+    public void deconnexion() {
+        Utilisateur utilisateur = (Utilisateur) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        Jwt jwt = this.jwtRepository
+                .findUtilisateurValidToken(utilisateur.getEmail(), false, false)
+                .orElseThrow(() -> new RuntimeException("username invalid"));
+
+        jwt.setExpire(true);
+        jwt.setDesactive(true);
+        jwtRepository.save(jwt);
     }
 }

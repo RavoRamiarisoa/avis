@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.chillo.avis.entite.Jwt;
@@ -14,9 +15,12 @@ import tech.chillo.avis.service.UtilisateurService;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Transactional
 @AllArgsConstructor
 @Service
 public class JwtService {
@@ -32,6 +36,7 @@ public class JwtService {
 
     public Map<String, String> generate(String username) {
         Utilisateur utilisateur = this.utilisateurService.loadUserByUsername(username);
+        this.disableTokens(utilisateur);
         final Map<String, String> jwtMap = this.generateJwt(utilisateur);
         final Jwt jwt = Jwt
                 .builder()
@@ -42,6 +47,15 @@ public class JwtService {
                 .build();
         this.jwtRepository.save(jwt);
         return jwtMap;
+    }
+
+    private void disableTokens(Utilisateur utilisateur) {
+        final List<Jwt> jwtList = this.jwtRepository
+                .findUtilisateur(utilisateur.getEmail()).peek(
+                jwt -> {
+                    jwt.setDesactive(true);
+                    jwt.setExpire(true);
+                }).toList();
     }
 
     public String extractUsername(String token) {

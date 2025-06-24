@@ -49,4 +49,9 @@ public class UtilisateurControleur {
         }
         return null;
     }
+
+    @PostMapping(path = "deconnexion")
+    public void deconnexion(@RequestBody Map<String, String> activation) {
+        this.utilisateurService.deconnexion();
+    }
 }
