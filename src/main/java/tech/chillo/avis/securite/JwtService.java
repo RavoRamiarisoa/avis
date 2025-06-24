@@ -7,6 +7,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tech.chillo.avis.entite.Jwt;
 import tech.chillo.avis.entite.Utilisateur;
@@ -14,12 +16,14 @@ import tech.chillo.avis.repository.JwtRepository;
 import tech.chillo.avis.service.UtilisateurService;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional
 @AllArgsConstructor
 @Service
@@ -108,6 +112,13 @@ public class JwtService {
     private Key getKey() {
         final byte[] decoder = Decoders.BASE64.decode(ENCRIPTION_KEY);
         return Keys.hmacShaKeyFor(decoder);
+    }
+
+    //@Scheduled(cron="@daily")
+    @Scheduled(cron="0 * * * * *")
+    public void removeUselessToken() {
+        log.info("Suppresion de token à {}", Instant.now());
+        this.jwtRepository.deleteAllByExpireAndDesactive(true, true);
     }
 
 }

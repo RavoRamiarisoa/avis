@@ -16,4 +16,7 @@ public interface JwtRepository extends CrudRepository<Jwt, Integer> {
 
     @Query( "FROM Jwt j WHERE j.utilisateur.email = :email")
     Stream<Jwt> findUtilisateur(String email);
+
+
+    void deleteAllByExpireAndDesactive(boolean expire, boolean desactive);
 }
