@@ -25,12 +25,17 @@ public class JwtService {
     private UtilisateurService utilisateurService;
     private JwtRepository jwtRepository;
 
+    public Jwt tokenByValue(String value){
+        return this.jwtRepository.findByValue(value)
+                .orElseThrow(() -> new RuntimeException("Jwt not found"));
+    }
+
     public Map<String, String> generate(String username) {
         Utilisateur utilisateur = this.utilisateurService.loadUserByUsername(username);
         final Map<String, String> jwtMap = this.generateJwt(utilisateur);
         final Jwt jwt = Jwt
                 .builder()
-                .valeur(jwtMap.get(BEARER))
+                .value(jwtMap.get(BEARER))
                 .desactive(false)
                 .expire(false)
                 .utilisateur(utilisateur)

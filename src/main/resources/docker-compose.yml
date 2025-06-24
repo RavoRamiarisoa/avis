@@ -1,4 +1,5 @@
 # pour lancer docker : docker compose up -d  (en background)
+# pour afficher les composer : docker compose ps -a
 # Use root/example as user/password credentials
 services:
   db:
